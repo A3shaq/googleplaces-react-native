@@ -1,9 +1,9 @@
 // src/screens/HomeScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, FlatList, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchPlaceSuggestions, fetchPlaceDetails } from '../services/placesApi';
+import {MapComponent} from '../component';
 
 const { height } = Dimensions.get('window');
 
@@ -59,22 +59,15 @@ const HomeScreen = () => {
   const lat = selectedLocation.geometry.location.lat;
   const lng = selectedLocation.geometry.location.lng;
 
+
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        region={{
-          latitude: lat,
-          longitude: lng,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}>
-        <Marker
-          coordinate={{ latitude: lat, longitude: lng }}
-          title={selectedLocation?.name}
-          description={selectedLocation.formatted_address}
-        />
-      </MapView>
+   <MapComponent
+        latitude={lat}
+        longitude={lng}
+        title={selectedLocation?.name}
+        description={selectedLocation.formatted_address}
+      />
 
       <View style={styles.searchContainer}>
         <TextInput
@@ -99,7 +92,7 @@ const HomeScreen = () => {
           keyExtractor={(item) => item?.place_id}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => setSelectedLocation(item)}>
-              <Text style={styles.suggestion}>{item.name}</Text>
+              <Text style={styles.suggestion}>{JSON.stringify(item.description)}</Text>
             </TouchableOpacity>
           )}
           style={styles.list}
@@ -119,7 +112,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    top: 40,
+    top: 10,
     left: 10,
     right: 10,
     backgroundColor: 'white',
