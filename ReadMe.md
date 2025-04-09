@@ -27,7 +27,7 @@ This is a simple React Native app built with Expo that lets users search for pla
 
 ### 1. Clone the Repository
 bash
-git clone https://your-repo-link.git
+git clone https://github.com/A3shaq/googleplaces-react-native
 cd GooglePlacesApp
 
 
