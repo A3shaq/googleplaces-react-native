@@ -77,9 +77,11 @@ npx expo start -c
 GooglePlacesApp/
 ├── App.tsx
 ├── src/
+    ├── component/MapComponent.tsx
+│   ├── HomeScreen.tsx
 │   ├── screens/
 │   │   ├── HomeScreen.tsx
-│   │   └── MapScreen.tsx
+│   │   
 │   └── services/
 │       └── placesApi.ts
 ├── .env
@@ -94,6 +96,3 @@ GooglePlacesApp/
 - You must enable **Google Places API** and **Maps SDK for Android/iOS** in your Google Cloud Console.
 - The API key should have appropriate billing and quota limits.
 
----
-
-## 📜 License
