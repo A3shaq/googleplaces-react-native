@@ -31,7 +31,6 @@ const HomeScreen = () => {
   
   const loadHistory = async () => {
     const json = await AsyncStorage.getItem('search_history');
-    console.log('async==>',json)
       if (json) setHistory(JSON.parse(json));
     };
     console.log(history)
