@@ -1,39 +1,56 @@
-// src/screens/HomeScreen.tsx
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, FlatList, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View,StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import { fetchPlaceSuggestions, fetchPlaceDetails } from '../services/placesApi';
-import {MapComponent} from '../component';
-
-const { height } = Dimensions.get('window');
-
-const fallbackLocation = {
-  name: 'Random Place',
-  formatted_address: '123 Example St, Random City',
-  geometry: {
-    location: {
-      lat: 37.7749,
-      lng: -122.4194,
-    },
-  },
-};
+import { GoogleAutoComplete, GoogleMap } from '../component';
 
 const HomeScreen = () => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [history, setHistory] = useState<any[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<any>(fallbackLocation);
+  const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
+
+  const [loading, setLoading] = useState<boolean>(true);
+
 
   useEffect(() => {
+    getCurrentLocation();
     loadHistory();
   }, []);
 
-  
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Location Permission Required', 'Please enable location access to use the app.');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      setSelectedLocation({
+        name: 'Current Location',
+        formatted_address: 'Your Location',
+        geometry: {
+          location: {
+            lat: latitude,
+            lng: longitude,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error fetching location:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadHistory = async () => {
     const json = await AsyncStorage.getItem('search_history');
-      if (json) setHistory(JSON.parse(json));
-    };
-    console.log(history)
+    if (json) setHistory(JSON.parse(json));
+  };
 
   const saveToHistory = async (place: any) => {
     const updatedHistory = [place, ...history.filter(h => h?.place_id !== place?.place_id)].slice(0, 10);
@@ -56,49 +73,34 @@ const HomeScreen = () => {
     setSuggestions([]);
   };
 
+
+  if (loading || !selectedLocation) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
   const lat = selectedLocation.geometry.location.lat;
   const lng = selectedLocation.geometry.location.lng;
 
 
   return (
     <View style={styles.container}>
-   <MapComponent
+      <GoogleMap
         latitude={lat}
         longitude={lng}
         title={selectedLocation?.name}
         description={selectedLocation.formatted_address}
       />
-
-      <View style={styles.searchContainer}>
-        <TextInput
-          placeholder="Search for places"
-          style={styles.input}
-          value={query}
-          onChangeText={handleSearch}
-        />
-        <FlatList
-          data={suggestions}
-          keyExtractor={(item: any) => item?.place_id}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleSelectPlace(item)}>
-              <Text style={styles.suggestion}>{item.description}</Text>
-            </TouchableOpacity>
-          )}
-          style={styles.list}
-        />
-        <Text style={styles.historyTitle}>Search History</Text>
-        {history&&<FlatList
-          data={history}
-          keyExtractor={(item) => item?.place_id}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => setSelectedLocation(item)}>
-              <Text style={styles.suggestion}>{JSON.stringify(item.description)}</Text>
-            </TouchableOpacity>
-          )}
-          style={styles.list}
-        />}
-        
-      </View>
+      <GoogleAutoComplete
+        query={query}
+        suggestions={suggestions}
+        history={history}
+        onSearch={handleSearch}
+        onSelectSuggestion={handleSelectPlace}
+        onSelectHistoryItem={setSelectedLocation}
+      />
     </View>
   );
 };
@@ -107,40 +109,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
+  loaderContainer: {
     flex: 1,
-  },
-  searchContainer: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 8,
-    elevation: 5,
-    maxHeight: height * 0.5,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 5,
-    borderRadius: 6,
-  },
-  suggestion: {
-    padding: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  historyTitle: {
-    fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  list: {
-    maxHeight: 100,
-  },
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
 
 export default HomeScreen;

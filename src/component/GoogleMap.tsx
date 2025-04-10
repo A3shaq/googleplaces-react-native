@@ -9,7 +9,7 @@ type MapComponentProps = {
   description: string;
 };
 
-const MapComponent: React.FC<MapComponentProps> = ({
+const GoogleMap: React.FC<MapComponentProps> = ({
   latitude,
   longitude,
   title,
@@ -35,4 +35,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MapComponent;
+export default GoogleMap;

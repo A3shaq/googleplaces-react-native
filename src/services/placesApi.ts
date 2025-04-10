@@ -1,4 +1,3 @@
-// src/services/placesApi.ts
 import axios from 'axios';
 import { GOOGLE_API_KEY } from '@env';
 
